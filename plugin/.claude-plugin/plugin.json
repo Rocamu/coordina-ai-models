@@ -1,0 +1,8 @@
+{
+  "name": "coordina",
+  "version": "2.3.14",
+  "description": "Coordina trabajos con GPT/Codex o Claude sin copiar y pegar.",
+  "author": {
+    "name": "Coordina contributors"
+  }
+}

@@ -1,0 +1,10 @@
+# Add to ~/.grok/config.toml to expose Coordina's tools to Grok Build.
+# Replace paths with your own absolute paths (install.py prints them).
+[mcp_servers.coordina]
+command = "/usr/bin/python3"
+args = ["-B", "/Users/YOU/Library/Application Support/Coordina/runtime/coordina.py", "mcp", "--client", "grok"]
+enabled = true
+
+[mcp_servers.coordina.env]
+COORDINA_HOME = "/Users/YOU/.local/share/coordina"
+PYTHONDONTWRITEBYTECODE = "1"

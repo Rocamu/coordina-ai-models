@@ -1,0 +1,15 @@
+Coordina
+Copyright (c) 2026 Rodrigo Castillo
+Licensed under the MIT License (see LICENSE).
+
+This product includes work developed with reference to third-party software:
+
+- claude-codex-mcp-bridge — https://github.com/WebisityStudio/claude-codex-mcp-bridge
+  Copyright (c) 2026 Tesla Major. MIT License.
+  The local desktop transport implementation in live.py was developed with
+  reference to local-ipc.ts, claude-wake.ts and codex-wake.ts from that project.
+  The full upstream license text is reproduced in THIRD_PARTY_NOTICES.md.
+
+Product names (Codex, ChatGPT, Claude, Antigravity, Gemini, Grok, DeepSeek,
+OpenCode, NVIDIA, Meta) are trademarks of their respective owners. Coordina is
+not affiliated with or endorsed by any of them.

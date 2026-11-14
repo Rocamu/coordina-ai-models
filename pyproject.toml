@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "coordina-ai-models"  # PyPI availability not yet checked
+version = "2.3.14"
+description = "Coordinate work between AI models (Codex, Claude, Gemini via Antigravity, Grok, DeepSeek, GLM, Nemotron, Qwen) with a local, durable job queue."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Rodrigo Castillo" }]
+keywords = ["mcp", "ai-agents", "codex", "claude-code", "antigravity", "gemini", "grok", "multi-agent"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: MacOS",
+  "Environment :: Console",
+  "Topic :: Software Development",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/Rocamu/coordina-ai-models"
+Issues = "https://github.com/Rocamu/coordina-ai-models/issues"
+
+[project.scripts]
+coordina = "coordina:main"
+
+[tool.setuptools]
+py-modules = ["coordina", "live", "routing", "lifecycle", "opencode_backend", "deepseek_official", "freellm_backend", "install"]
+
+# Note: the supported install path is `python3 install.py`, which also registers
+# MCP servers, skills and plugins. A pip install only provides the modules/CLI.

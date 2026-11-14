@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "coordina": {
+      "command": "python3",
+      "args": [
+        "-B",
+        "/ABSOLUTE/PATH/TO/Library/Application Support/Coordina/runtime/coordina.py",
+        "mcp",
+        "--client",
+        "desktop"
+      ],
+      "env": {
+        "COORDINA_HOME": "/ABSOLUTE/PATH/TO/.local/share/coordina",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "COORDINA_RELEASE": "2.3.14"
+      }
+    }
+  },
+  "_comment": "Placeholder. install.py rewrites this file with absolute paths for the current user."
+}

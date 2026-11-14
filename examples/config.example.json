@@ -1,0 +1,6 @@
+{
+  "binaries": {"codex": "/opt/homebrew/bin/codex", "claude": "/Users/YOU/.local/bin/claude"},
+  "models": {"antigravity": "flash"},
+  "client_interpreters": {},
+  "joker": {"cli": "/path/to/your/joker_coordina_cli.py", "gpu_minutes": 60}
+}

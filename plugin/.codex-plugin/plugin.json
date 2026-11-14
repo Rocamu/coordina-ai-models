@@ -1,0 +1,11 @@
+{
+  "name": "coordina",
+  "version": "2.3.14",
+  "description": "Colaboración local entre GPT/Codex y Claude.",
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Coordina",
+    "shortDescription": "Coordina con GPT o Claude"
+  }
+}
