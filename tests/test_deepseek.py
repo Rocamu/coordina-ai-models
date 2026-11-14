@@ -44,6 +44,7 @@ class DeepSeekTests(unittest.TestCase):
         self.assertEqual(b.backend("opencode"), "joker")
         self.assertEqual(b.backend("opencode-deepseek"), "deepseek")
 
+    @patch.object(oc, "BINARY", sys.executable)
     def test_additional_models_are_fixed_and_keep_one_round(self):
         for target, model in oc.MODELS.items():
             spec = {"target": target, "workspace": str(self.workspace), "mode": "consult"}
@@ -58,6 +59,11 @@ class DeepSeekTests(unittest.TestCase):
                 live.coordinate(target, "read", str(self.workspace), rounds=2, launch=False)
             with self.assertRaises(ValueError):
                 live.coordinate(target, "read", str(self.workspace), route="existing", launch=False)
+
+    def test_command_requires_installed_cli(self):
+        with patch.object(oc, "BINARY", str(self.root / "missing-opencode-cli")):
+            with self.assertRaisesRegex(ValueError, "falta su CLI empaquetada"):
+                oc.command({"target": "deepseek"})
 
     def test_policy_restricts_tools_and_caller_pwd(self):
         env = oc.environment({"workspace": str(self.workspace), "mode": "consult"})
