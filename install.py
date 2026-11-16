@@ -19,7 +19,7 @@ STATE = Path(os.environ.get("COORDINA_HOME", str(USER/".local/share/coordina")))
 STAMP = datetime.datetime.now().strftime("%Y%m%d-%H%M%S-%f")
 BACKUP = STATE/"backups"/STAMP
 PYTHON = sys.executable
-RUNTIME = USER/"Library/Application Support/Coordina/runtime"
+RUNTIME = USER/("Library/Application Support/Coordina/runtime" if sys.platform == "darwin" else ".local/share/coordina/runtime")
 os.umask(0o077)
 
 
@@ -27,7 +27,7 @@ os.umask(0o077)
 # once (its pre-install state), every file or directory it creates is recorded,
 # and rollback() restores that state if any step fails or the run is interrupted.
 JOURNAL = {"created": [], "modified": {}, "dirs": []}
-SOURCE_MODULES = ("lifecycle.py", "coordina.py", "live.py", "routing.py", "opencode_backend.py", "deepseek_official.py", "freellm_backend.py")
+SOURCE_MODULES = ("lifecycle.py", "coordina.py", "live.py", "routing.py", "opencode_backend.py", "deepseek_official.py", "freellm_backend.py", "portable.py")
 
 
 def reset_journal():
@@ -93,8 +93,8 @@ def preflight(args):
     problems = []
     if sys.version_info < (3, 9):
         problems.append("Se necesita Python 3.9 o superior (este es "+sys.version.split()[0]+").")
-    if sys.platform != "darwin":
-        problems.append("Coordina solo funciona en macOS.")
+    if sys.platform not in ("darwin", "linux"):
+        problems.append("Supported platforms: macOS and Linux.")
     missing = [n for n in SOURCE_MODULES if not (ROOT/n).is_file()]
     if not (ROOT/"plugin/skills/coordina/SKILL.md").is_file():
         missing.append("plugin/skills/coordina/SKILL.md")
@@ -111,9 +111,6 @@ def preflight(args):
     full = not any(a in args for a in ("--update-skills", "--update-runtime", "--antigravity"))
     if full:
         bins = {n: shutil.which(n) for n in ("codex", "claude")}
-        absent = [n for n, b in bins.items() if not b]
-        if absent:
-            problems.append("Falta en el PATH: "+", ".join(absent)+" (la instalación completa registra Coordina en Codex y Claude Code; usa --antigravity para instalar solo el plugin de Antigravity).")
         for path in (USER/".claude.json", USER/"Library/Application Support/Claude/claude_desktop_config.json"):
             if path.exists():
                 try:
@@ -374,9 +371,7 @@ def install(args):
         return
     track_mkdir(STATE, mode=0o700)
     track_mkdir(STATE/"intercambio", mode=0o700)
-    bins = {n:shutil.which(n) for n in ("codex", "claude")}
-    if not all(bins.values()):
-        raise SystemExit("Falta uno de los CLI: "+str(bins))
+    bins = {n:shutil.which(n) for n in ("codex", "claude", "gemini", "opencode")}
     conf = STATE/"config.json"
     cfg = json.loads(conf.read_text()) if conf.exists() else {}
     cfg.update(binaries=bins)
@@ -392,52 +387,15 @@ def install(args):
     write_json(plugin/".codex-plugin/plugin.json", {"name":"coordina","version":VERSION,
                "description":"Colaboración local entre GPT/Codex y Claude.","skills":"./skills/","mcpServers":"./.mcp.json",
                "interface":{"displayName":"Coordina","shortDescription":"Coordina con GPT o Claude"}})
-    skill_at(USER/".codex/skills/coordina")
-    skill_at(USER/".claude/skills/coordina")
-    # Register the official MCP transports, preserving existing servers.
-    codex_config = USER/".codex/config.toml"
-    save(codex_config)
-    already = codex_config.exists() and re.search(r"^\[mcp_servers\.coordina\]", codex_config.read_text(), re.M)
-    if not already:
-      subprocess.run([bins["codex"],"mcp","add","--env","COORDINA_HOME="+str(STATE),"--env","PYTHONDONTWRITEBYTECODE=1","coordina","--",PYTHON,"-B",str(RUNTIME/"coordina.py"),"mcp","--client","codex"], check=True)
-    configure_codex(auto_approve)
-    save(USER/".claude.json")
-    # Use the CLI's own supported configuration writer.
-    claude_json = USER/".claude.json"
-    data = json.loads(claude_json.read_text()) if claude_json.exists() else {}
-    if "coordina" not in data.get("mcpServers", {}):
-        subprocess.run([bins["claude"],"mcp","add","--scope","user","--env","COORDINA_HOME="+str(STATE),"--env","PYTHONDONTWRITEBYTECODE=1","coordina","--",PYTHON,"-B",str(RUNTIME/"coordina.py"),"mcp","--client","claude-code"],check=True)
-    else:
-        data["mcpServers"]["coordina"] = dict(type="stdio",**mcp_wire("claude-code"))
-        write_json(USER/".claude.json",data)
-    # Personal marketplace paths resolve from the user's home directory.
-    installed = USER/".codex/plugins/coordina"
-    if installed.exists() and not installed.is_symlink():
-        if not (installed/".codex-plugin/plugin.json").exists():
-            raise SystemExit("Destino ya ocupado; se conserva: "+str(installed))
-    save(installed/".mcp.json")
-    for source in plugin.rglob("*"):
-        if source.is_file():
-            save(installed/source.relative_to(plugin))
-    track_mkdir(installed)
-    shutil.copytree(plugin, installed, dirs_exist_ok=True)
-    market = USER/".agents/plugins/marketplace.json"
-    cat = json.loads(market.read_text()) if market.exists() else {"name":"personal","interface":{"displayName":"Personal"},"plugins":[]}
-    item = {"name":"coordina","source":{"source":"local","path":"./.codex/plugins/coordina"},
-            "policy":{"installation":"AVAILABLE","authentication":"ON_INSTALL"},"category":"Productivity"}
-    cat["plugins"] = [x for x in cat.get("plugins",[]) if x.get("name") != "coordina"]+[item]
-    write_json(market, cat)
-    subprocess.run([bins["codex"],"plugin","add","coordina@"+cat["name"],"--json"],check=True)
-    # Claude Desktop Chat's legacy local MCP transport. Cowork uses plugin ZIP.
-    desktop = USER/"Library/Application Support/Claude/claude_desktop_config.json"
-    d = json.loads(desktop.read_text()) if desktop.exists() else {}
-    if "coordina" in d.get("mcpServers", {}):
-        d["mcpServers"]["coordina"] = wire
-        write_json(desktop,d)
-    for path in (USER/".claude/plugins/synced").glob("*/coordina/.mcp.json"):
-        d = json.loads(path.read_text())
-        d.setdefault("mcpServers", {})["coordina"] = wire
-        write_json(path,d)
+    if bins['codex']:
+        skill_at(USER/'.codex/skills/coordina')
+        configure_codex(auto_approve)
+    if bins['claude']:
+        skill_at(USER/'.claude/skills/coordina')
+        path = USER/'.claude.json'
+        data = json.loads(path.read_text()) if path.exists() else {}
+        data.setdefault('mcpServers', {})['coordina'] = dict(type='stdio', **mcp_wire('claude-code'))
+        write_json(path, data)
     out = build_zip()
     agy = install_antigravity()
     bindir = USER/".local/bin"
@@ -449,12 +407,14 @@ def install(args):
     launcher.chmod(0o700)
     save(STATE/"last-install.json")
     (STATE/"last-install.json").write_text(json.dumps({"backup":str(BACKUP),"root":str(ROOT),"runtime":str(RUNTIME),"state":str(STATE),"python":PYTHON,
-        "installed":["Codex MCP + skill","Claude Code MCP + skill","Claude Desktop Chat MCP"]+(["Antigravity plugin (MCP + skill)"] if agy else []),
-        "available":["ChatGPT Work local plugin in Personal","Cowork plugin ZIP"],"cowork_zip":str(out)},indent=2))
+        "installed":(["Codex MCP + skill"] if bins["codex"] else [])+(["Claude Code MCP + skill"] if bins["claude"] else [])+(["Antigravity plugin (MCP + skill)"] if agy else []),
+        "detected_models":[name for name, path in bins.items() if path],
+        "available":["Cowork plugin ZIP"],"cowork_zip":str(out)},indent=2))
     write_skill_manifest(refresh_skills())
     print("Instalado. Respaldos: "+str(BACKUP))
     print("Aprobación automática de herramientas: "+("ACTIVADA (--auto-approve)" if cfg.get("auto_approve") is True else "desactivada (por defecto; ver SECURITY.md)"))
     print("Plugin para Cowork: "+str(out))
+    print("Diagnóstico: coordina doctor; primer encargo: coordina run 'tu consulta'")
 
 
 if __name__ == "__main__":

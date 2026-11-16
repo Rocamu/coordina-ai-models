@@ -83,12 +83,12 @@ class InstallerTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder);source=root/"Desktop/source";source.mkdir(parents=True)
             runtime=root/"Library/Application Support/Coordina/runtime";runtime.mkdir(parents=True)
-            for name in ("coordina.py","live.py","routing.py","opencode_backend.py","deepseek_official.py","freellm_backend.py","lifecycle.py"):
+            for name in installer.SOURCE_MODULES:
                 (source/name).write_text("new "+name)
                 (runtime/name).write_text("previous "+name)
             with patch.object(installer,"ROOT",source),patch.object(installer,"RUNTIME",runtime),patch.object(installer,"BACKUP",root/"backup"):
                 installer.deploy_runtime()
-                for name in ("coordina.py","live.py","routing.py","opencode_backend.py","deepseek_official.py","freellm_backend.py","lifecycle.py"):
+                for name in installer.SOURCE_MODULES:
                     self.assertFalse((runtime/name).is_symlink())
                     self.assertEqual((runtime/name).read_text(),"new "+name)
                     self.assertEqual((root/"backup"/str(runtime/name).lstrip("/")).read_text(),"previous "+name)

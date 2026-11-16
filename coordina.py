@@ -1217,6 +1217,12 @@ def main():
     lt.add_argument("--mode", choices=["consult","edit"], default="consult"); lt.add_argument("--timeout", type=int, default=600)
     lt.add_argument("--route", choices=["auto","existing","new"], default="auto"); lt.add_argument("--session-id"); lt.add_argument("--session-hint")
     sub.add_parser("status")
+    sub.add_parser("doctor", help="Detect optional model CLIs and probe responsiveness")
+    direct = sub.add_parser("run", help="Run a read-only task with the installed models")
+    direct.add_argument("task")
+    direct.add_argument("--workspace", default=".")
+    direct.add_argument("--timeout", type=int, default=300)
+    direct.add_argument("--models", nargs="+")
     c = sub.add_parser("conversations"); c.add_argument("target"); c.add_argument("--workspace",required=True)
     c.add_argument("--task",default=""); c.add_argument("--session-hint")
     r = sub.add_parser("reply"); r.add_argument("job_id"); r.add_argument("reply_key"); r.add_argument("text")
@@ -1251,7 +1257,13 @@ def main():
     if action == "lote-worker":
         import live
         return live.batch_worker(args["job_ids"])
-    if action == "status": value = status()
+    if action == "doctor":
+        import portable
+        value = portable.doctor()
+    elif action == "run":
+        import portable
+        value = portable.run(args['task'], workspace_path(args['workspace']), args['timeout'], args['models'])
+    elif action == "status": value = status()
     elif action == "resume":
         import lifecycle
         value = lifecycle.resume(args["job_id"],args["expected_revision"])

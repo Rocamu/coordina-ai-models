@@ -139,11 +139,11 @@ class TransactionalInstallerTests(unittest.TestCase):
 
     def test_preflight_failure_writes_nothing(self):
         before = self.snapshot()
-        (self.bin/'claude').unlink()
+        (self.src/'coordina.py').unlink()
         with patch.object(installer.subprocess, 'run', self.fake_run()):
             with self.assertRaises(SystemExit) as ctx:
                 installer.main([])
-        self.assertIn('claude', str(ctx.exception))
+        self.assertIn('coordina.py', str(ctx.exception))
         self.assertIn('No se instaló nada', str(ctx.exception))
         self.assertEqual(before, self.snapshot())
 
@@ -156,7 +156,7 @@ class TransactionalInstallerTests(unittest.TestCase):
 
     def test_failure_midway_rolls_back_every_change(self):
         before = self.snapshot()
-        with patch.object(installer.subprocess, 'run', self.fake_run(fail_on='plugin')):
+        with patch.object(installer, 'configure_codex', side_effect=RuntimeError('configuration failed')):
             with self.assertRaises(SystemExit) as ctx:
                 installer.main([])
         self.assertIn('vuelve a ejecutar', str(ctx.exception))

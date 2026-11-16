@@ -237,3 +237,22 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 ## Credits & license
 
 Coordina's desktop transports in `live.py` were developed with reference to [WebisityStudio/claude-codex-mcp-bridge](https://github.com/WebisityStudio/claude-codex-mcp-bridge) (MIT, © 2026 Tesla Major) — full notice in [NOTICE](NOTICE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Created by Rodrigo Castillo. Released under the [MIT License](LICENSE).
+
+### Optional CLI startup
+
+The installer accepts any subset of Codex, Claude Code, Gemini CLI and OpenCode
+on `PATH`; Codex and Claude Code are not jointly required. Install and sign in
+to at least one CLI to run a task. Installation with none is allowed.
+
+```sh
+coordina doctor
+coordina run "Explain this project" --workspace .
+coordina run "Review this design" --models codex claude
+```
+
+`doctor` reports detection, bounded `--version` responsiveness checks and
+installation links. It does not verify authentication or submit model requests.
+`run` uses a single available CLI directly. With multiple CLIs, it runs them
+sequentially and supplies earlier answers to later models for review. Results
+include each answer and any errors. This command is for read-only consultations;
+the existing job commands remain available for other workflows.

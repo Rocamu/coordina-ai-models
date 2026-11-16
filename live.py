@@ -176,6 +176,8 @@ def wake_codex(session_id,wait=None):
 
 def process_is_live(row):
     if type(row.get("pid")) is not int or row["pid"]<=0:return False
+    if not b.config().get("experimental", {}).get("antigravity", False):
+        return []
     env=dict(os.environ,TZ="UTC",LC_ALL="C")
     p=subprocess.run(["/bin/ps","-p",str(row["pid"]),"-o","uid=","-o","lstart="],capture_output=True,text=True,timeout=2,env=env)
     parts=p.stdout.strip().split(None,1)
@@ -424,7 +426,7 @@ def antigravity_response(endpoint,receipt,jid):
 
 
 # Optional remote-GPU agent client. Set joker.cli in config.json; this default is a placeholder.
-JOKER_CLI_DEFAULT=str(Path.home()/".local/share/coordina/joker/joker_coordina_cli.py")
+JOKER_CLI_DEFAULT=""
 JOKER_DONE=("done","completed")
 JOKER_FAILED=("error","failed","cancelled")
 
@@ -452,7 +454,7 @@ def joker_cli(args,timeout=60):
         return d
 
 
-QWENCTL_DEFAULT=str(Path.home()/"Library/Application Support/QWEN/control/qwenctl")
+QWENCTL_DEFAULT=""  # external plugin must explicitly configure its controller
 JOKER_MIN_REMAINING=10*60  # segundos de plazo que debe quedar en una sesión ajena para usarla sin renovarla
 
 
@@ -485,7 +487,9 @@ def qwen_start_failed(salida):
     """True si la operación de encendido ya terminó con error (p. ej., el proveedor no tenía GPU disponible)."""
     m=re.search(r'"operation(?:_id)?"\s*:\s*"([0-9a-f]{32})"',salida or "") or re.search(r"\b([0-9a-f]{32})\b",salida or "")
     if not m:return False
-    f=Path.home()/"Library/Application Support/QWEN/work/direct-operations"/(m.group(1)+".json")
+    directory=(b.config().get("joker") or {}).get("operations_directory")
+    if not directory:return False
+    f=Path(directory)/(m.group(1)+".json")
     try:return json.loads(f.read_text()).get("state")=="failed"
     except (OSError,ValueError):return False
 

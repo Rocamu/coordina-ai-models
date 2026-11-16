@@ -15,6 +15,7 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "License :: OSI Approved :: MIT License",
   "Operating System :: MacOS",
+  "Operating System :: POSIX :: Linux",
   "Environment :: Console",
   "Topic :: Software Development",
 ]
@@ -28,7 +29,7 @@ Issues = "https://github.com/Rocamu/coordina-ai-models/issues"
 coordina = "coordina:main"
 
 [tool.setuptools]
-py-modules = ["coordina", "live", "routing", "lifecycle", "opencode_backend", "deepseek_official", "freellm_backend", "install"]
+py-modules = ["coordina", "live", "routing", "lifecycle", "opencode_backend", "deepseek_official", "freellm_backend", "portable", "install"]
 
 # Note: the supported install path is `python3 install.py`, which also registers
 # MCP servers, skills and plugins. A pip install only provides the modules/CLI.

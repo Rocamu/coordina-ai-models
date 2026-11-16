@@ -29,7 +29,7 @@ class SkillDistributionTests(unittest.TestCase):
                 self.assertEqual((root/'backups'/str(installed/'SKILL.md').lstrip('/')).read_text(),'drift')
 
     def test_skills_only_does_not_deploy_or_reconfigure_runtime(self):
-        with patch.object(i.sys,'argv',['install.py','--update-skills']),patch.object(i,'refresh_skills',return_value=[]) as refresh,patch.object(i,'write_skill_manifest') as manifest,patch.object(i,'build_zip',return_value='archive'),patch.object(i,'deploy_runtime') as deploy,patch.object(i,'refresh_connection_versions') as configure:
+        with patch.object(i.sys,'argv',['install.py','--update-skills']),patch.object(i,'preflight'),patch.object(i,'refresh_skills',return_value=[]) as refresh,patch.object(i,'write_skill_manifest') as manifest,patch.object(i,'build_zip',return_value='archive'),patch.object(i,'deploy_runtime') as deploy,patch.object(i,'refresh_connection_versions') as configure:
             i.main();refresh.assert_called_once();manifest.assert_called_once_with([])
             deploy.assert_not_called();configure.assert_not_called()
 
