@@ -4,8 +4,9 @@ jobs:
   unittest:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        os: [macos-latest, ubuntu-24.04]
         python: ["3.9", "3.12"]
     steps:
       - uses: actions/checkout@v4
