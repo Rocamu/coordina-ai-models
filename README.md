@@ -18,8 +18,6 @@ Python 3.9+ standard library only · no daemon · no network port · MIT.
 
 > **Public preview (2.3.14).** macOS only. The open-chat transports use **undocumented** interfaces of the Codex desktop app and Antigravity that can break with any app update — see [Tested versions](#tested-versions) and [Limits](#limits). [Español](README.es.md)
 
-<!-- DEMO GIF GOES HERE (see docs/PRESENTATION.md for the 45-second script) -->
-
 ## Quick start
 
 ```sh

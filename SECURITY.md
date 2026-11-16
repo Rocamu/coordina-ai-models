@@ -4,7 +4,7 @@
 Only the latest release receives fixes.
 
 ## Reporting a vulnerability
-Please **do not open a public issue**. Use GitHub's private vulnerability reporting ("Report a vulnerability" in the Security tab) <!-- TODO before launch: enable it, or add a contact email -->.
+Please **do not open a public issue**. Use GitHub's private vulnerability reporting ("Report a vulnerability" in the Security tab): https://github.com/Rocamu/coordina-ai-models/security/advisories/new
 We aim to acknowledge within 7 days.
 
 ## Threat model (summary)
